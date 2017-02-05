@@ -91,6 +91,39 @@ void Matrix::fillRandom(double range){
     }
 }
 
-double Matrix::operator [](int index){
+double Matrix::getElement(int row, int column, int elementRow, int elementColumn){
+    int index = 0;
+    index += row * rowCount;
+    index += column * columnCount;
+    index += elementRow * elementRowCount;
+    index += elementColumn * elementColumnCount;
     return *(data + index);
+}
+
+void Matrix::setElement(int row, int column, int elementRow, int elementColumn, int number){
+    int index = 0;
+    index += row  * rowCount;
+    index += column * columnCount;
+    index += elementRow * elementRowCount;
+    index += elementColumn * elementColumnCount;
+    *(data + index) = number;
+}
+
+Matrix& multiplication(const Matrix& A, const Matrix& B){
+    Matrix result(A.rowCount, B.columnCount, A.elementRowCount, B.elementColumnCount);
+    for(int row = 0; row < A.rowCount; row++){
+        for(int column = 0; column < B.columnCount; column++){
+            for(int i = 0; i < A.columnCount; i++){
+                for(int elementRow = 0; elementRow < A.elementRowCount; elementRow++){
+                    for(int elementColumn = 0; elementColumn < B.elementColumnCount; elementColumn++){
+                        for(int j = 0; j < A.elementColumnCount; j++){
+                            *(result.data + row * result.rowCount + column * result.columnCount + elementRow * result.elementRowCount + elementColumn * result.elementColumnCount) +=
+                            *(A.data + row * A.rowCount + i * A.columnCount + elementRow * A.elementRowCount + j * A.elementColumnCount) *
+                            *(B.data + i * B.rowCount + column * B.columnCount + j * B.elementRowCount + elementColumn * B.elementColumnCount);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

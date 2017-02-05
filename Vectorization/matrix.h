@@ -9,8 +9,9 @@ class Matrix{
         Matrix(int row, int column, int elementRow, int elementColumn);
         void fill(double number);
         void fillRandom(double range);
-        int calculateIndex(int row, int column, int elementRow, int elementColumn);
-        double operator[](int index);
+        double getElement(int row, int column, int elementRow, int elemenColumn);
+        void setElement(int row, int column, int elementRow, int elemenColumn, int number);
+        friend Matrix& multiplication(const Matrix& A, const Matrix& B);
         ~Matrix();
     private:
         double* data;
