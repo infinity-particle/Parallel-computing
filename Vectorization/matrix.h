@@ -6,19 +6,34 @@
 class Matrix{
     public:
         Matrix();
-        Matrix(int row, int column, int elementRow, int elementColumn);
+        Matrix(int row, int column);
+
         void fill(double number);
         void fillRandom(double range);
-        double getElement(int row, int column, int elementRow, int elemenColumn);
-        void setElement(int row, int column, int elementRow, int elemenColumn, int number);
-        friend Matrix& multiplication(const Matrix& A, const Matrix& B);
+
+        int getRowCount();
+        int getColumnCount();
+        void setElement(int row, int column, int number);
+
+        Matrix& operator = (const Matrix& matrix);
+
+        class Proxy{
+            public:
+                Proxy(double* array);
+                double operator[](int index) const;
+                double& operator[](int index);
+            private:
+                double* array;
+        };
+
+        Proxy operator [](int index) const;
+        Proxy& operator [](int index);
+
         ~Matrix();
     private:
-        double* data;
+        double** matrix;
         int rowCount;
         int columnCount;
-        int elementRowCount;
-        int elementColumnCount;
 };
 
-#endif MATRIX_H
+#endif //MATRIX_H

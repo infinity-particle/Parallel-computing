@@ -1,75 +1,32 @@
 #include "matrix.h"
 
 Matrix::Matrix(){
-    data = nullptr;
+    matrix = nullptr;
 }
 
-Matrix::Matrix(int row, int column, int elementRow, int elementColumn){
-    /*data = (double****)malloc(row * sizeof(double***));
-    for(int  i = 0; i < row; i++){
-        *(data + i) = (double***)malloc(column * sizeof(double**));
-    }
-
-    for(int i = 0; i < row; i++){
-        for(int j = 0; j < column; j++){
-            *(*(data + i) + j) = (double**)malloc(elementRow * sizeof(double*));
-        }
-    }
-
-    for(int i = 0; i < row; i++){
-        for(int j = 0; j < column; j++){
-            for(int k = 0; k < elementRow; k++){
-                *(*(*(data + i) + j) + k) = (double*)malloc(elementColumn * sizeof(double));
-            }
-        }
-    }
-*/
+Matrix::Matrix(int row, int column){
     rowCount = row;
     columnCount = column;
-    elementRowCount = elementRow;
-    elementColumnCount = elementColumn;
 
-    int memorySize = elementRow * elementColumn * row * column;
-
-    data = new double[memorySize];
+    matrix = new double*[row];
+    for(int i = 0; i < row; i++){
+        *(matrix + i) = new double[column];
+    }
 }
 
 Matrix::~Matrix(){
-    /*for(int i = 0; i < row; i++){
-        for(int j = 0; j < column; j++){
-            for(int k = 0; k < elementRow; k++){
-                free(*(*(*(data + i) + j) + k));
-                *(*(*(data + i) + j) + k) = nullptr;
-            }
-        }
+    for(int i = 0; i < rowCount; i++){
+        free(*(matrix + i));
+        *(matrix + i) = nullptr;
     }
-
-    for(int i = 0; i < row; i++){
-        for(int j = 0; j < column; j++){
-            free(*(*(data + i) + j));
-            *(*(data + i) + j) = nullptr;
-        }
-    }
-
-    for(int  i = 0; i < row; i++){
-        free(*(data + i));
-        *(data + i) = nullptr;
-    }
-
-    free(data);
-    data = nullptr;*/
-    free(data);
-    data = nullptr;
+    free(matrix);
+    matrix = nullptr;
 }
 
 void Matrix::fill(double number){
     for(int i = 0; i < rowCount; i++){
         for(int j = 0; j < columnCount; j++){
-            for(int k = 0; k < elementRowCount; k++){
-                for(int n = 0; n < elementColumnCount; n++){
-                    *(data + i * rowCount + j * columnCount + k * elementRowCount + n * elementColumnCount) = number;
-                }
-            }
+            *(*(matrix + i) + j) = number;
         }
     }
 }
@@ -77,53 +34,46 @@ void Matrix::fill(double number){
 void Matrix::fillRandom(double range){
     for(int i = 0; i < rowCount; i++){
         for(int j = 0; j < columnCount; j++){
-            for(int k = 0; k < elementRowCount; k++){
-                for(int n = 0; n < elementColumnCount; n++){
-                    int index = 0;
-                    index += i * rowCount;
-                    index += j * columnCount;
-                    index += k * elementRowCount;
-                    index += n * elementColumnCount;
-                    *(data + index) = (double)rand()/(double)(RAND_MAX) * range;
-                }
-            }
+            *(*(matrix + i) + j) = (double)rand()/(double)(RAND_MAX) * range;
         }
     }
 }
 
-double Matrix::getElement(int row, int column, int elementRow, int elementColumn){
-    int index = 0;
-    index += row * rowCount;
-    index += column * columnCount;
-    index += elementRow * elementRowCount;
-    index += elementColumn * elementColumnCount;
-    return *(data + index);
+int Matrix::getRowCount(){
+    return rowCount;
 }
 
-void Matrix::setElement(int row, int column, int elementRow, int elementColumn, int number){
-    int index = 0;
-    index += row  * rowCount;
-    index += column * columnCount;
-    index += elementRow * elementRowCount;
-    index += elementColumn * elementColumnCount;
-    *(data + index) = number;
+int Matrix::getColumnCount(){
+    return columnCount;
 }
 
-Matrix& multiplication(const Matrix& A, const Matrix& B){
-    Matrix result(A.rowCount, B.columnCount, A.elementRowCount, B.elementColumnCount);
-    for(int row = 0; row < A.rowCount; row++){
-        for(int column = 0; column < B.columnCount; column++){
-            for(int i = 0; i < A.columnCount; i++){
-                for(int elementRow = 0; elementRow < A.elementRowCount; elementRow++){
-                    for(int elementColumn = 0; elementColumn < B.elementColumnCount; elementColumn++){
-                        for(int j = 0; j < A.elementColumnCount; j++){
-                            *(result.data + row * result.rowCount + column * result.columnCount + elementRow * result.elementRowCount + elementColumn * result.elementColumnCount) +=
-                            *(A.data + row * A.rowCount + i * A.columnCount + elementRow * A.elementRowCount + j * A.elementColumnCount) *
-                            *(B.data + i * B.rowCount + column * B.columnCount + j * B.elementRowCount + elementColumn * B.elementColumnCount);
-                        }
-                    }
-                }
-            }
-        }
-    }
+void Matrix::setElement(int row, int column, int number){
+    *(*(matrix + row) + column) = number;
+}
+
+Matrix& Matrix::operator = (const Matrix& matrix){
+    this->rowCount = matrix.getRowCount();
+    this->columnCount = matrix.getColumnCount();
+    this->matrix = matrix.matrix;
+    return *this;
+}
+
+Matrix::Proxy::Proxy(double* array) : array(array){
+
+}
+
+double Matrix::Proxy::operator [](int index) const{
+    return *(array + index);
+}
+
+double& Matrix::Proxy::operator [](int index){
+    return *(array + index);
+}
+
+Proxy Matrix::operator [](int index) const{
+    return Proxy(matrix + index);
+}
+
+Proxy& Matrix::operator [](int index){
+    return Proxy(matrix + index);
 }
