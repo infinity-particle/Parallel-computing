@@ -1,7 +1,9 @@
 #ifndef MATRIX_H
 #define MATRIX_H
+
 #include <iostream>
-#include <stdlib.h>
+#include <iomanip>
+#include "proxy.h"
 
 class Matrix{
     public:
@@ -11,23 +13,15 @@ class Matrix{
         void fill(double number);
         void fillRandom(double range);
 
-        int getRowCount();
-        int getColumnCount();
+        int getRowCount() const;
+        int getColumnCount() const;
         void setElement(int row, int column, int number);
 
         Matrix& operator = (const Matrix& matrix);
+        friend std::ostream& operator << (std::ostream& output, const Matrix& matrix);
+        friend std::istream& operator >> (std::istream& input, Matrix& matrix);
 
-        class Proxy{
-            public:
-                Proxy(double* array);
-                double operator[](int index) const;
-                double& operator[](int index);
-            private:
-                double* array;
-        };
-
-        Proxy operator [](int index) const;
-        Proxy& operator [](int index);
+        Proxy operator [](int index);
 
         ~Matrix();
     private:

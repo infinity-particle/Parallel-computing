@@ -39,11 +39,11 @@ void Matrix::fillRandom(double range){
     }
 }
 
-int Matrix::getRowCount(){
+int Matrix::getRowCount() const{
     return rowCount;
 }
 
-int Matrix::getColumnCount(){
+int Matrix::getColumnCount() const{
     return columnCount;
 }
 
@@ -52,28 +52,32 @@ void Matrix::setElement(int row, int column, int number){
 }
 
 Matrix& Matrix::operator = (const Matrix& matrix){
-    this->rowCount = matrix.getRowCount();
-    this->columnCount = matrix.getColumnCount();
-    this->matrix = matrix.matrix;
-    return *this;
+    if(&matrix == this){
+        return *this;
+    }
 }
 
-Matrix::Proxy::Proxy(double* array) : array(array){
-
+std::ostream& operator << (std::ostream& output, const Matrix& matrix){
+    for(int row = 0; row < matrix.getRowCount(); row++){
+        for(int column = 0; column < matrix.getColumnCount(); column++){
+            output << std::setfill(' ') << std::setw(7) << std::left << *(*(matrix.matrix + row) + column) << "\t";
+        }
+        output << std::endl;
+    }
+    return output;
 }
 
-double Matrix::Proxy::operator [](int index) const{
-    return *(array + index);
+std::istream& operator >> (std::istream& input, Matrix& matrix){
+    for(int row = 0; row < matrix.getRowCount(); row++){
+        for(int column = 0; column < matrix.getColumnCount(); column++){
+            input >> *(*(matrix.matrix + row) + column);
+        }
+    }
+    return input;
 }
 
-double& Matrix::Proxy::operator [](int index){
-    return *(array + index);
-}
-
-Proxy Matrix::operator [](int index) const{
-    return Proxy(matrix + index);
-}
-
-Proxy& Matrix::operator [](int index){
-    return Proxy(matrix + index);
+Proxy Matrix::operator [](int index){
+    //Proxy tmp(*(matrix + index));
+    //return tmp;
+    return Proxy(*(matrix + index));
 }
