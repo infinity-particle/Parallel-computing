@@ -15,12 +15,14 @@ Matrix::Matrix(int row, int column){
 }
 
 Matrix::~Matrix(){
-    for(int i = 0; i < rowCount; i++){
-        free(*(matrix + i));
-        *(matrix + i) = nullptr;
+    if(matrix){
+        for(int i = 0; i < rowCount; i++){
+            delete [] *(matrix + i);
+            *(matrix + i) = nullptr;
+        }
+        delete [] matrix;
+        matrix = nullptr;
     }
-    free(matrix);
-    matrix = nullptr;
 }
 
 void Matrix::fill(double number){
@@ -55,12 +57,38 @@ Matrix& Matrix::operator = (const Matrix& matrix){
     if(&matrix == this){
         return *this;
     }
+
+    if(this->matrix){
+        for(int row = 0; row < this->rowCount; row++){
+            delete [] *(this->matrix + row);
+            *(this->matrix + row) = nullptr;
+        }
+        delete [] this->matrix;
+        this->matrix = nullptr;
+    }
+
+    this->rowCount = matrix.getRowCount();
+    this->columnCount = matrix.getColumnCount();
+
+    this->matrix = new double*[this->rowCount];
+
+    for(int i = 0; i < this->rowCount; i++){
+        *(this->matrix + i) = new double[this->columnCount];
+    }
+
+    for(int row = 0; row < this->rowCount; row++){
+        for(int column = 0; column < this->columnCount; column++){
+            *(*(this->matrix + row) + column) = *(*(matrix.matrix + row) + column);
+        }
+    }
+
+    return *this;
 }
 
 std::ostream& operator << (std::ostream& output, const Matrix& matrix){
     for(int row = 0; row < matrix.getRowCount(); row++){
         for(int column = 0; column < matrix.getColumnCount(); column++){
-            output << std::setfill(' ') << std::setw(7) << std::left << *(*(matrix.matrix + row) + column) << "\t";
+            output << std::setfill(' ') << std::setw(FIELD_WIDTH) << std::left << *(*(matrix.matrix + row) + column) << "\t";
         }
         output << std::endl;
     }
@@ -76,8 +104,10 @@ std::istream& operator >> (std::istream& input, Matrix& matrix){
     return input;
 }
 
-Proxy Matrix::operator [](int index){
-    //Proxy tmp(*(matrix + index));
-    //return tmp;
-    return Proxy(*(matrix + index));
+double Matrix::operator ()(int row, int column) const{
+    return *(*(matrix + row) + column);
+}
+
+double& Matrix::operator ()(int row, int column){
+    return *(*(matrix + row) + column);
 }

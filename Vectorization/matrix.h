@@ -3,7 +3,8 @@
 
 #include <iostream>
 #include <iomanip>
-#include "proxy.h"
+
+#define FIELD_WIDTH 7
 
 class Matrix{
     public:
@@ -21,7 +22,8 @@ class Matrix{
         friend std::ostream& operator << (std::ostream& output, const Matrix& matrix);
         friend std::istream& operator >> (std::istream& input, Matrix& matrix);
 
-        Proxy operator [](int index);
+        double operator ()(int row, int column) const;
+        double& operator ()(int row, int column);
 
         ~Matrix();
     private:

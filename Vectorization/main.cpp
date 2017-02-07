@@ -3,12 +3,15 @@
 using namespace std;
 
 int main(){
-	Matrix A(2,2);
+	Matrix A(2,2), B;
 	system("clear");
 	cin >> A;
-	cout << A << endl;
 
-	cout << A[0][1] << endl;
+	B = A;
+
+	cout << B;
+
+	cout << B(0,1) << endl;
 
 	return 0;
 }
