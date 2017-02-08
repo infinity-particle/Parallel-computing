@@ -134,7 +134,11 @@ std::istream& operator >> (std::istream& input, Matrix& matrix){
     return input;
 }
 
-double& Matrix::operator ()(int row, int column){
+double& Matrix::at(int row, int column){
+    return *(*(matrix + row) + column);
+}
+
+double Matrix::value(int row, int column) const{
     return *(*(matrix + row) + column);
 }
 
