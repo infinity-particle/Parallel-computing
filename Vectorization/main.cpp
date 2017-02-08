@@ -3,15 +3,26 @@
 using namespace std;
 
 int main(){
-	Matrix A(2,2), B;
+	Matrix A(3,2);
+	Matrix B(2,3), result;
+
 	system("clear");
+	cout << "Input matrix A:" << endl;
 	cin >> A;
+	cout << "Input matrix B:" << endl;
+	cin >> B;
 
-	B = A;
+	result = (A * B);
 
-	cout << B;
+	cout << "Result of A * B:" << endl;
+	cout << result << endl;
 
-	cout << B(0,1) << endl;
+	/*Matrix A(3,3);
+
+	A.fill(128);
+
+	cout << "Matrix A: " << endl << A << endl;*/
+
 
 	return 0;
 }
