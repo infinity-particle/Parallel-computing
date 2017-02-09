@@ -3,8 +3,8 @@
 using namespace std;
 
 int main(){
-	Matrix A(3,2);
-	Matrix B(2,3), result;
+	Matrix A(2,2);
+	Matrix B(2,2), result;
 
 	system("clear");
 	cout << "Input matrix A:" << endl;
@@ -12,7 +12,7 @@ int main(){
 	cout << "Input matrix B:" << endl;
 	cin >> B;
 
-	result = (A * B);
+	result = A + B;
 
 	cout << "Result of A * B:" << endl;
 	cout << result << endl;

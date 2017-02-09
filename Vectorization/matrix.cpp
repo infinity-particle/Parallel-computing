@@ -148,11 +148,23 @@ Matrix operator * (const Matrix& A, const Matrix& B){
     for(int row = 0; row < A.rowCount; row++){
         for(int column = 0; column < B.columnCount; column++){
             for(int inner = 0; inner < A.columnCount; inner++){
-                result(row,column) += (*(*(A.matrix + row) + inner)) *
+                *(*(result.matrix + row) + column) += (*(*(A.matrix + row) + inner)) *
                 (*(*(B.matrix + inner) + column));
             }
         }
     }
 
+    return result;
+}
+
+Matrix operator + (const Matrix& A, const Matrix& B){
+    Matrix result(A.rowCount, A.columnCount);
+    result.fill(0.0);
+    for(int row = 0; row < A.rowCount; row++){
+        for(int column = 0; column < A.columnCount; column++){
+            *(*(result.matrix + row) + column) = *(*(A.matrix + row) + column) +
+            *(*(B.matrix + row) + column);
+        }
+    }
     return result;
 }

@@ -23,9 +23,10 @@ class Matrix{
         friend std::ostream& operator << (std::ostream& output, const Matrix& matrix);
         friend std::istream& operator >> (std::istream& input, Matrix& matrix);
         friend Matrix operator * (const Matrix& A, const Matrix& B);
+        friend Matrix operator + (const Matrix& A, const Matrix& B);
 
-        double& at(int row, column);
-        double value(int row, column) const;
+        double& at(int row, int column);
+        double value(int row, int column) const;
 
         ~Matrix();
     private:
