@@ -1,7 +1,7 @@
 #include "matrix.h"
 
 Matrix::Matrix(){
-    matrix = nullptr;
+    elements = nullptr;
     rowCount = 0;
     columnCount = 0;
 }
@@ -10,53 +10,53 @@ Matrix::Matrix(int row, int column){
     rowCount = row;
     columnCount = column;
 
-    matrix = new double* [row];
+    elements = new double* [row];
     for(int i = 0; i < row; i++){
-        *(matrix + i) = new double [column];
+        *(elements + i) = new double [column];
     }
 }
 
 Matrix::Matrix(const Matrix& copy){
-    if(this->matrix != nullptr){
+    if(this->elements != nullptr){
         for(int i = 0; i < this->rowCount; i++){
-            delete [] (*(matrix + i));
-            *(this->matrix + i) = nullptr;
+            delete [] (*(elements + i));
+            *(this->elements + i) = nullptr;
         }
-        delete [] this->matrix;
-        this->matrix = nullptr;
+        delete [] this->elements;
+        this->elements = nullptr;
     }
 
     this->rowCount = copy.getRowCount();
     this->columnCount = copy.getColumnCount();
 
-    this->matrix = new double* [this->rowCount];
+    this->elements = new double* [this->rowCount];
 
     for(int i = 0; i < this->rowCount; i++){
-        *(this->matrix + i) = new double [this->columnCount];
+        *(this->elements + i) = new double [this->columnCount];
     }
 
     for(int row = 0; row < this->rowCount; row++){
         for(int column = 0; column < this->columnCount; column++){
-            *(*(this->matrix + row) + column) = *(*(copy.matrix + row) + column);
+            *(*(this->elements + row) + column) = *(*(copy.elements + row) + column);
         }
     }
 }
 
 Matrix::~Matrix(){
-    if(matrix){
+    if(elements){
         for(int i = 0; i < rowCount; i++){
-            delete [] *(matrix + i);
-            *(matrix + i) = nullptr;
+            delete [] *(elements + i);
+            *(elements + i) = nullptr;
         }
-        delete [] matrix;
-        matrix = nullptr;
+        delete [] elements;
+        elements = nullptr;
     }
 }
 
 void Matrix::fill(double number){
     for(int i = 0; i < rowCount; i++){
         for(int j = 0; j < columnCount; j++){
-            *(*(matrix + i) + j) = number;
+            *(*(elements + i) + j) = number;
         }
     }
 }
@@ -64,7 +64,7 @@ void Matrix::fill(double number){
 void Matrix::fillRandom(double range){
     for(int i = 0; i < rowCount; i++){
         for(int j = 0; j < columnCount; j++){
-            *(*(matrix + i) + j) = (double)rand()/(double)(RAND_MAX) * range;
+            *(*(elements + i) + j) = (double)rand()/(double)(RAND_MAX) * range;
         }
     }
 }
@@ -80,7 +80,7 @@ int Matrix::getColumnCount() const{
 }
 
 void Matrix::setElement(int row, int column, int number){
-    *(*(matrix + row) + column) = number;
+    *(*(elements + row) + column) = number;
 }
 
 Matrix& Matrix::operator = (const Matrix& matrix){
@@ -88,27 +88,27 @@ Matrix& Matrix::operator = (const Matrix& matrix){
         return *this;
     }
 
-    if(this->matrix){
+    if(this->elements){
         for(int row = 0; row < this->rowCount; row++){
-            delete [] (*(this->matrix + row));
-            *(this->matrix + row) = nullptr;
+            delete [] (*(this->elements + row));
+            *(this->elements + row) = nullptr;
         }
-        delete [] this->matrix;
-        this->matrix = nullptr;
+        delete [] this->elements;
+        this->elements = nullptr;
     }
 
     this->rowCount = matrix.getRowCount();
     this->columnCount = matrix.getColumnCount();
 
-    this->matrix = new double* [this->rowCount];
+    this->elements = new double* [this->rowCount];
 
     for(int i = 0; i < this->rowCount; i++){
-        *(this->matrix + i) = new double [this->columnCount];
+        *(this->elements + i) = new double [this->columnCount];
     }
 
     for(int row = 0; row < this->rowCount; row++){
         for(int column = 0; column < this->columnCount; column++){
-            *(*(this->matrix + row) + column) = *(*(matrix.matrix + row) + column);
+            *(*(this->elements + row) + column) = *(*(matrix.elements + row) + column);
         }
     }
 
@@ -118,7 +118,7 @@ Matrix& Matrix::operator = (const Matrix& matrix){
 std::ostream& operator << (std::ostream& output, const Matrix& matrix){
     for(int row = 0; row < matrix.rowCount; row++){
         for(int column = 0; column < matrix.columnCount; column++){
-            output << std::setfill(' ') << std::setw(FIELD_WIDTH) << std::left << *(*(matrix.matrix + row) + column) << "\t";
+            output << std::setfill(' ') << std::setw(FIELD_WIDTH) << std::left << *(*(matrix.elements + row) + column) << "\t";
         }
         output << std::endl;
     }
@@ -128,18 +128,18 @@ std::ostream& operator << (std::ostream& output, const Matrix& matrix){
 std::istream& operator >> (std::istream& input, Matrix& matrix){
     for(int row = 0; row < matrix.rowCount; row++){
         for(int column = 0; column < matrix.columnCount; column++){
-            input >> *(*(matrix.matrix + row) + column);
+            input >> *(*(matrix.elements + row) + column);
         }
     }
     return input;
 }
 
 double& Matrix::at(int row, int column){
-    return *(*(matrix + row) + column);
+    return *(*(elements + row) + column);
 }
 
 double Matrix::value(int row, int column) const{
-    return *(*(matrix + row) + column);
+    return *(*(elements + row) + column);
 }
 
 Matrix operator * (const Matrix& A, const Matrix& B){
@@ -148,8 +148,8 @@ Matrix operator * (const Matrix& A, const Matrix& B){
     for(int row = 0; row < A.rowCount; row++){
         for(int column = 0; column < B.columnCount; column++){
             for(int inner = 0; inner < A.columnCount; inner++){
-                *(*(result.matrix + row) + column) += (*(*(A.matrix + row) + inner)) *
-                (*(*(B.matrix + inner) + column));
+                *(*(result.elements + row) + column) += (*(*(A.elements + row) + inner)) *
+                (*(*(B.elements + inner) + column));
             }
         }
     }
@@ -162,9 +162,20 @@ Matrix operator + (const Matrix& A, const Matrix& B){
     result.fill(0.0);
     for(int row = 0; row < A.rowCount; row++){
         for(int column = 0; column < A.columnCount; column++){
-            *(*(result.matrix + row) + column) = *(*(A.matrix + row) + column) +
-            *(*(B.matrix + row) + column);
+            *(*(result.elements + row) + column) = *(*(A.elements + row) + column) +
+            *(*(B.elements + row) + column);
         }
     }
     return result;
+}
+
+Matrix& Matrix::operator += (const Matrix& matrix){
+    for(int row = 0; row < rowCount; row++){
+        for(int column = 0; column < columnCount; column++){
+            *(*(this->elements + row) + column) = *(*(this->elements + row) + column) +
+            *(*(matrix.elements + row) + column);
+        }
+    }
+
+    return *this;
 }

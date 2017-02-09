@@ -1,27 +1,16 @@
-#include "matrix.h"
+#include "hypermatrix.h"
 
 using namespace std;
 
 int main(){
-	Matrix A(2,2);
-	Matrix B(2,2), result;
-
-	system("clear");
-	cout << "Input matrix A:" << endl;
-	cin >> A;
-	cout << "Input matrix B:" << endl;
-	cin >> B;
-
-	result = A + B;
+	Hypermatrix A(8,8,4,4), B(8,8,4,4), result;
+	A.fillRandom(2048);
+	B.fillRandom(2048);
+	
+	result = A * B;
 
 	cout << "Result of A * B:" << endl;
 	cout << result << endl;
-
-	/*Matrix A(3,3);
-
-	A.fill(128);
-
-	cout << "Matrix A: " << endl << A << endl;*/
 
 
 	return 0;

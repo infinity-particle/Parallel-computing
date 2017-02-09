@@ -20,6 +20,7 @@ class Matrix{
         void setElement(int row, int column, int number);
 
         Matrix& operator = (const Matrix& matrix);
+        Matrix& operator += (const Matrix& matrix);
         friend std::ostream& operator << (std::ostream& output, const Matrix& matrix);
         friend std::istream& operator >> (std::istream& input, Matrix& matrix);
         friend Matrix operator * (const Matrix& A, const Matrix& B);
@@ -30,7 +31,7 @@ class Matrix{
 
         ~Matrix();
     private:
-        double** matrix;
+        double** elements;
         int rowCount;
         int columnCount;
 };
