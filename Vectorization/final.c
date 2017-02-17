@@ -2,13 +2,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <xmmintrin.h>
+#include <immintrin.h>
 
-#define MATRIX_SIZE 8
-#define ELEMENT_SIZE 4
-
-// double A[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE];
-// double B[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE];
-// double C[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE];
+#define MATRIX_SIZE 40
+#define ELEMENT_SIZE 10
 
 int main(){
 
@@ -49,43 +46,37 @@ int main(){
 
 	printf("Elapsed time: %f\n", (double)(end - begin)/CLOCKS_PER_SEC);
 
-	int j = 0;
-	int i = 0;
+	/*
 	begin = clock();
 
 	for(int row = 0; row < MATRIX_SIZE; row++){
 		for(int column = 0; column < MATRIX_SIZE; column++){
-			for(int elementRow = 0; elementRow < ELEMENT_SIZE; elementRow++){
-				
+			__m256 aColumn0 = _mm_setr_pd(A[row][column][0][0], A[row][column][1][0], A[row][column][2][0], A[row][column][3][0]);
+			__m256 aColumn1 = _mm_setr_pd(A[row][column][0][1], A[row][column][1][1], A[row][column][2][1], A[row][column][3][1]);
+			__m256 aColumn2 = _mm_setr_pd(A[row][column][0][2], A[row][column][1][2], A[row][column][2][2], A[row][column][3][2]);
+			__m256 aColumn3 = _mm_setr_pd(A[row][column][0][3], A[row][column][1][3], A[row][column][2][3], A[row][column][3][3]);
+
+			for(int i = 0;  i < ELEMENT_SIZE; i++){
+				__m256 bRow0 = _mm_set1_pd(B[row][column][0][i]);
+				__m256 bRow1 = _mm_set1_pd(B[row][column][1][i]);
+				__m256 bRow2 = _mm_set1_pd(B[row][column][2][i]);
+				__m256 bRow3 = _mm_set1_pd(B[row][column][3][i]);
+
+				__m256 cResult = _mm_set1_pd(0.0);
+
+				_mm_add_pd(cResult, _mm_mul_pd(aColumn0, bRow0));
+				_mm_add_pd(cResult, _mm_mul_pd(aColumn1, bRow1));
+				_mm_add_pd(cResult, _mm_mul_pd(aColumn2, bRow2));
+				_mm_add_pd(cResult, _mm_mul_pd(aColumn3, bRow3));
+
+
+			}
+
 			}
 		}
 	}
 
 	end = clock();
-	printf("Elapsed time: %f\n", (double)(end - begin)/CLOCKS_PER_SEC);
+	printf("Elapsed time - Hand vectorization: %f\n", (double)(end - begin)/CLOCKS_PER_SEC);*/
 	return 0;
 }
-
-/*
-__m128d A00_A10 = _mm_setr_pd(A[row][column][0][0],A[row][column][1][0]);
-__m128d A01_A11 = _mm_setr_pd(A[row][column][0][1],A[row][column][1][1]);
-
-__m128d A02_A12 = _mm_setr_pd(A[row][column][0][2], A[row][column][1][2]);
-__m128d A03_A13 = _mm_setr_pd(A[row][column][0][3], A[row][column][1][3]);
-
-__m128d A20_A30 = _mm_setr_pd(A[row][column][2][0], A[row][column][3][0]);
-__m128d A21_A31 = _mm_setr_pd(A[row][column][2][1], A[row]column][3][1]);
-
-__m128d A22_A32 = _mm_setr_pd(A[row][column][2][2], A[row][column][3][2]);
-__m128d A23_A33 = _mm_setr_pd(A[row][column][2][3], A[row][column][3][3]);
-
-__m128d b00 = _mm_set1_pd(B[row][column][0][0]);
-__m128d b10 = _mm_set1_pd(B[row][column][1][0]);
-__m128d b20 = _mm_set1_pd(B[row][column][2][0]);
-__m128d b30 = _mm_set1_pd(B[row][column][3][0]);
-
-__m128d b01 = _mm_set1_pd(B[row][column][0][1]);
-__m128d b11 = _mm_set1_pd(B[row][column][1][1]);
-__m128d b21 = _mm_set1_pd(B[row][column][2][1]);
-__m128d b31 = _mm_set1_pd(B[row][column][3][1]);
-*/
