@@ -8,15 +8,15 @@
 #define ELEMENT_SIZE 4
 
 void printMatrix(double matrix[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE]);
-bool check(double standart[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE], double matrix[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE]);
+bool check(double standartMatrix[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE], double matrix[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE]);
 unsigned long long rdtsc();
 
 int main(){
 
-	static double A[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE];
-	static double B[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE];
-	static double standart[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE];
-	static double C[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE];
+	double matrixA[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(16)));
+	double matrixB[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(16)));
+	double standartMatrix[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(16)));
+	double matrixC[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(16)));
 	unsigned long long startNumberOfCycles, endNumberOfCycles;
 
 	srand(time(NULL));
@@ -25,16 +25,15 @@ int main(){
 		for(int j = 0; j < MATRIX_SIZE; j++){
 			for(int k = 0; k < ELEMENT_SIZE; k++){
 				for(int n = 0; n < ELEMENT_SIZE; n++){
-					A[i][j][k][n] = (double)rand()/(double)(RAND_MAX) * 2048.0;
-					B[i][j][k][n] = (double)rand()/(double)(RAND_MAX) * 2048.0;
-					standart[i][j][k][n] = 0.0;
-					C[i][j][k][n] = 0.0;
+					matrixA[i][j][k][n] = (double)rand()/(double)(RAND_MAX) * 2048.0;
+					matrixB[i][j][k][n] = (double)rand()/(double)(RAND_MAX) * 2048.0;
+					standartMatrix[i][j][k][n] = 0.0;
+					matrixC[i][j][k][n] = 0.0;
 				}
 			}
 		}
 	}
 
-	//clock_t begin = clock();
 	startNumberOfCycles = rdtsc();
 
 	for(int row = 0; row < MATRIX_SIZE; row++){
@@ -43,7 +42,7 @@ int main(){
 				for(int elementRow = 0; elementRow < ELEMENT_SIZE; elementRow++){
 					for(int elementColumn = 0; elementColumn < ELEMENT_SIZE; elementColumn++){
 						for(int j = 0; j < ELEMENT_SIZE; j++){
-							standart[row][column][elementRow][elementColumn] += A[row][i][elementRow][j] * B[i][column][j][elementColumn];
+							standartMatrix[row][column][elementRow][elementColumn] += matrixA[row][i][elementRow][j] * matrixB[i][column][j][elementColumn];
 						}
 					}
 				}
@@ -52,55 +51,53 @@ int main(){
 	}
 
 	endNumberOfCycles = rdtsc();
-	printf("Standart multiplication - Number of CPU cycles: %llu\n\n", endNumberOfCycles - startNumberOfCycles);
-	//clock_t end = clock();
-	//printf("Elapsed time: %f\n", (double)(end - begin)/CLOCKS_PER_SEC);
-	//begin = clock();
-	//printMatrix(standart);
+
+	printf("standartMatrix multiplication - Number of CPU cycles: %llu\n\n", endNumberOfCycles - startNumberOfCycles);
+
 	startNumberOfCycles = rdtsc();
 
 	for(int row = 0; row < MATRIX_SIZE; row++){
 		for(int column = 0; column < MATRIX_SIZE; column++){
-			for(int inner = 0; inner < ELEMENT_SIZE; inner++){
+			for(int inner = 0; inner < MATRIX_SIZE; inner++){
 				#ifdef __AVX__
-					__m256d B0x = _mm256_load_pd(&B[inner][column][0][0]);
-					__m256d B1x = _mm256_load_pd(&B[inner][column][1][0]);
-					__m256d B2x = _mm256_load_pd(&B[inner][column][2][0]);
-					__m256d B3x = _mm256_load_pd(&B[inner][column][3][0]);
+					__m256d B0x = _mm256_load_pd(&matrixB[inner][column][0][0]);
+					__m256d B1x = _mm256_load_pd(&matrixB[inner][column][1][0]);
+					__m256d B2x = _mm256_load_pd(&matrixB[inner][column][2][0]);
+					__m256d B3x = _mm256_load_pd(&matrixB[inner][column][3][0]);
 				#else
-					__m128d B00_B01 = _mm_load_pd(&B[inner][column][0][0]);
-					__m128d B02_B03 = _mm_load_pd(&B[inner][column][0][2]);
-					__m128d B10_B11 = _mm_load_pd(&B[inner][column][1][0]);
-					__m128d B12_B13 = _mm_load_pd(&B[inner][column][1][2]);
-					__m128d B20_B21 = _mm_load_pd(&B[inner][column][2][0]);
-					__m128d B22_B23 = _mm_load_pd(&B[inner][column][2][2]);
-					__m128d B30_B31 = _mm_load_pd(&B[inner][column][3][0]);
-					__m128d B32_B33 = _mm_load_pd(&B[inner][column][3][2]);
+					__m128d B00_B01 = _mm_load_pd(&matrixB[inner][column][0][0]);
+					__m128d B02_B03 = _mm_load_pd(&matrixB[inner][column][0][2]);
+					__m128d B10_B11 = _mm_load_pd(&matrixB[inner][column][1][0]);
+					__m128d B12_B13 = _mm_load_pd(&matrixB[inner][column][1][2]);
+					__m128d B20_B21 = _mm_load_pd(&matrixB[inner][column][2][0]);
+					__m128d B22_B23 = _mm_load_pd(&matrixB[inner][column][2][2]);
+					__m128d B30_B31 = _mm_load_pd(&matrixB[inner][column][3][0]);
+					__m128d B32_B33 = _mm_load_pd(&matrixB[inner][column][3][2]);
 				#endif
 
 				for(int i = 0;  i < ELEMENT_SIZE; i++){
 					#ifdef __AVX__
-						__m256d Ax0 = _mm256_set1_pd(A[row][inner][i][0]);
-						__m256d Ax1 = _mm256_set1_pd(A[row][inner][i][1]);
-						__m256d Ax2 = _mm256_set1_pd(A[row][inner][i][2]);
-						__m256d Ax3 = _mm256_set1_pd(A[row][inner][i][3]);
+						__m256d Ax0 = _mm256_set1_pd(matrixA[row][inner][i][0]);
+						__m256d Ax1 = _mm256_set1_pd(matrixA[row][inner][i][1]);
+						__m256d Ax2 = _mm256_set1_pd(matrixA[row][inner][i][2]);
+						__m256d Ax3 = _mm256_set1_pd(matrixA[row][inner][i][3]);
 
-						__m256d cResult = _mm256_load_pd(&C[row][column][i][0]);
+						__m256d cResult = _mm256_load_pd(&matrixC[row][column][i][0]);
 
 						cResult = _mm256_add_pd(cResult, _mm256_mul_pd(Ax0, B0x));
 						cResult = _mm256_add_pd(cResult, _mm256_mul_pd(Ax1, B1x));
 						cResult = _mm256_add_pd(cResult, _mm256_mul_pd(Ax2, B2x));
 						cResult = _mm256_add_pd(cResult, _mm256_mul_pd(Ax3, B3x));
 
-						_mm256_store_pd(&C[row][column][i][0],cResult);
+						_mm256_store_pd(&matrixC[row][column][i][0],cResult);
 					#else
-						__m128d Ax0 = _mm_load1_pd(&A[row][inner][i][0]);
-						__m128d Ax1 = _mm_load1_pd(&A[row][inner][i][1]);
-						__m128d Ax2 = _mm_load1_pd(&A[row][inner][i][2]);
-						__m128d Ax3 = _mm_load1_pd(&A[row][inner][i][3]);
+						__m128d Ax0 = _mm_load1_pd(&matrixA[row][inner][i][0]);
+						__m128d Ax1 = _mm_load1_pd(&matrixA[row][inner][i][1]);
+						__m128d Ax2 = _mm_load1_pd(&matrixA[row][inner][i][2]);
+						__m128d Ax3 = _mm_load1_pd(&matrixA[row][inner][i][3]);
 
-						__m128d cResult1 = _mm_load_pd(&C[row][column][i][0]);
-						__m128d cResult2 = _mm_load_pd(&C[row][column][i][2]);
+						__m128d cResult1 = _mm_load_pd(&matrixC[row][column][i][0]);
+						__m128d cResult2 = _mm_load_pd(&matrixC[row][column][i][2]);
 
 						cResult1 = _mm_add_pd(cResult1, _mm_mul_pd(Ax0, B00_B01));
 						cResult1 = _mm_add_pd(cResult1, _mm_mul_pd(Ax1, B10_B11));
@@ -112,8 +109,8 @@ int main(){
 						cResult2 = _mm_add_pd(cResult2, _mm_mul_pd(Ax2, B22_B23));
 						cResult2 = _mm_add_pd(cResult2, _mm_mul_pd(Ax3, B32_B33));
 
-						_mm_store_pd(&C[row][column][i][0],cResult1);
-						_mm_store_pd(&C[row][column][i][2],cResult2);
+						_mm_store_pd(&matrixC[row][column][i][0],cResult1);
+						_mm_store_pd(&matrixC[row][column][i][2],cResult2);
 					#endif
 				}
 			}
@@ -121,24 +118,22 @@ int main(){
 	}
 
 	endNumberOfCycles = rdtsc();
-	if(check(standart,C)){
+
+	if(check(standartMatrix, matrixC)){
 		printf("Vectorized multiplication - Number of CPU cycles: %llu\n\n", endNumberOfCycles - startNumberOfCycles);
 	}else{
 		printf("The multiplication result is not equal to the standart! - Number of CPU cycles: %llu\n\n", endNumberOfCycles - startNumberOfCycles);
 	}
-	//printMatrix(C);
-	//end = clock();
-	//printf("Elapsed time - Hand vectorization(row): %f\n", (double)(end - begin)/CLOCKS_PER_SEC);
 
 	return 0;
 }
 
-bool check(double standart[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE], double matrix[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE]){
+bool check(double standartMatrix[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE], double matrix[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE]){
 	for(int row = 0; row < MATRIX_SIZE; row++){
 		for(int column = 0; column < MATRIX_SIZE; column++){
 			for(int elementRow = 0; elementRow < ELEMENT_SIZE; elementRow++){
 				for(int elementColumn = 0; elementColumn < ELEMENT_SIZE; elementColumn++){
-					if(standart[row][column][elementRow][elementColumn] != matrix[row][column][elementRow][elementColumn]){
+					if(standartMatrix[row][column][elementRow][elementColumn] != matrix[row][column][elementRow][elementColumn]){
 						return false;
 					}
 				}
@@ -164,7 +159,7 @@ void printMatrix(double matrix[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_S
 }
 
 unsigned long long rdtsc(){
-    unsigned int lo,hi;
-    __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
-    return ((unsigned long long)hi << 32) | lo;
+    unsigned int low,high;
+    __asm__ __volatile__ ("rdtsc" : "=matrixA" (low), "=d" (high));
+    return ((unsigned long long)high << 32) | low;
 }
