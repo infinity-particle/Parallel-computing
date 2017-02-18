@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
-#include <emmintrin.h>
+#include <immintrin.h>
 
 #define MATRIX_SIZE 8
 #define ELEMENT_SIZE 4
@@ -12,11 +12,18 @@ bool check(double standartMatrix[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT
 unsigned long long rdtsc();
 
 int main(){
+	#ifdef __AVX__
+		double matrixA[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(32)));
+		double matrixB[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(32)));
+		double standartMatrix[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(32)));
+		double matrixC[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(32)));
+	#else
+		double matrixA[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(16)));
+		double matrixB[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(16)));
+		double standartMatrix[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(16)));
+		double matrixC[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(16)));
+	#endif
 
-	double matrixA[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(16)));
-	double matrixB[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(16)));
-	double standartMatrix[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(16)));
-	double matrixC[MATRIX_SIZE][MATRIX_SIZE][ELEMENT_SIZE][ELEMENT_SIZE] __attribute__((aligned(16)));
 	unsigned long long startNumberOfCycles, endNumberOfCycles;
 
 	srand(time(NULL));
