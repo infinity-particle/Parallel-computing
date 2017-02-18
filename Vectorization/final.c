@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-//#include <xmmintrin.h>
+
 #include <immintrin.h>
 
 #define MATRIX_SIZE 8
@@ -51,7 +51,6 @@ int main(){
 	begin = clock();
 
 	double* temp = (double*)aligned_alloc(16, sizeof(double) * ELEMENT_SIZE);
-	//double temp[ELEMENT_SIZE];
 	for(int row = 0; row < MATRIX_SIZE; row++){
 		for(int column = 0; column < MATRIX_SIZE; column++){
 			__m256d aColumn0 = _mm256_setr_pd(A[row][column][0][0], A[row][column][1][0], A[row][column][2][0], A[row][column][3][0]);

@@ -148,8 +148,9 @@ Matrix operator * (const Matrix& A, const Matrix& B){
     for(int row = 0; row < A.rowCount; row++){
         for(int column = 0; column < B.columnCount; column++){
             for(int inner = 0; inner < A.columnCount; inner++){
-                *(*(result.elements + row) + column) += (*(*(A.elements + row) + inner)) *
+                double temp = (*(*(A.elements + row) + inner)) *
                 (*(*(B.elements + inner) + column));
+                *(*(result.elements + row) + column) = *(*(result.elements + row) + column) + temp;
             }
         }
     }
