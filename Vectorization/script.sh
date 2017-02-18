@@ -1,9 +1,9 @@
 #!/bin/bash
 clear
-echo "Multiplication without vectorization"
-gcc -o lab1 final.c
-./lab1
+echo "Without auto-vectorization"
+gcc -o main.out main.c
+./main.out
 echo "                                 "
-gcc -O3 -msse -fopt-info-vec-optimized -o lab1 final.c
-echo "Multiplication with vectorization"
-./lab1
+gcc -O3 -msse2 -o main.out main.c
+echo "With auto-vectorization"
+./main.out
