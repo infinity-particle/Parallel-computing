@@ -63,29 +63,29 @@ int main(){
 		for(int column = 0; column < MATRIX_SIZE; column++){
 			for(int inner = 0; inner < ELEMENT_SIZE; inner++){
 				#ifdef __AVX__
-					__m256d B0x = _mm256_setr_pd(B[row][column][0][0], B[row][column][0][1], B[row][column][0][2], B[row][column][0][3]);
-					__m256d B1x = _mm256_setr_pd(B[row][column][1][0], B[row][column][1][1], B[row][column][1][2], B[row][column][1][3]);
-					__m256d B2x = _mm256_setr_pd(B[row][column][2][0], B[row][column][2][1], B[row][column][2][2], B[row][column][2][3]);
-					__m256d B3x = _mm256_setr_pd(B[row][column][3][0], B[row][column][3][1], B[row][column][3][2], B[row][column][3][3]);
+					__m256d B0x = _mm256_load_pd(&B[inner][column][0][0]);
+					__m256d B1x = _mm256_load_pd(&B[inner][column][1][0]);
+					__m256d B2x = _mm256_load_pd(&B[inner][column][2][0]);
+					__m256d B3x = _mm256_load_pd(&B[inner][column][3][0]);
 				#else
-					__m128d B00_B01 = _mm_load_pd(&B[row][inner][0][0]);
-					__m128d B02_B03 = _mm_load_pd(&B[row][inner][0][2]);
-					__m128d B10_B11 = _mm_load_pd(&B[row][inner][1][0]);
-					__m128d B12_B13 = _mm_load_pd(&B[row][inner][1][2]);
-					__m128d B20_B21 = _mm_load_pd(&B[row][inner][2][0]);
-					__m128d B22_B23 = _mm_load_pd(&B[row][inner][2][2]);
-					__m128d B30_B31 = _mm_load_pd(&B[row][inner][3][0]);
-					__m128d B32_B33 = _mm_load_pd(&B[row][inner][3][2]);
+					__m128d B00_B01 = _mm_load_pd(&B[inner][column][0][0]);
+					__m128d B02_B03 = _mm_load_pd(&B[inner][column][0][2]);
+					__m128d B10_B11 = _mm_load_pd(&B[inner][column][1][0]);
+					__m128d B12_B13 = _mm_load_pd(&B[inner][column][1][2]);
+					__m128d B20_B21 = _mm_load_pd(&B[inner][column][2][0]);
+					__m128d B22_B23 = _mm_load_pd(&B[inner][column][2][2]);
+					__m128d B30_B31 = _mm_load_pd(&B[inner][column][3][0]);
+					__m128d B32_B33 = _mm_load_pd(&B[inner][column][3][2]);
 				#endif
 
 				for(int i = 0;  i < ELEMENT_SIZE; i++){
 					#ifdef __AVX__
-						__m256d Ax0 = _mm256_set1_pd(A[row][column][i][0]);
-						__m256d Ax1 = _mm256_set1_pd(A[row][column][i][1]);
-						__m256d Ax2 = _mm256_set1_pd(A[row][column][i][2]);
-						__m256d Ax3 = _mm256_set1_pd(A[row][column][i][3]);
+						__m256d Ax0 = _mm256_set1_pd(A[row][inner][i][0]);
+						__m256d Ax1 = _mm256_set1_pd(A[row][inner][i][1]);
+						__m256d Ax2 = _mm256_set1_pd(A[row][inner][i][2]);
+						__m256d Ax3 = _mm256_set1_pd(A[row][inner][i][3]);
 
-						__m256d cResult = _mm256_set1_pd(0.0);
+						__m256d cResult = _mm256_load_pd(&C[row][column][i][0]);
 
 						cResult = _mm256_add_pd(cResult, _mm256_mul_pd(Ax0, B0x));
 						cResult = _mm256_add_pd(cResult, _mm256_mul_pd(Ax1, B1x));
@@ -94,10 +94,10 @@ int main(){
 
 						_mm256_store_pd(&C[row][column][i][0],cResult);
 					#else
-						__m128d Ax0 = _mm_load1_pd(&A[inner][column][i][0]);
-						__m128d Ax1 = _mm_load1_pd(&A[inner][column][i][1]);
-						__m128d Ax2 = _mm_load1_pd(&A[inner][column][i][2]);
-						__m128d Ax3 = _mm_load1_pd(&A[inner][column][i][3]);
+						__m128d Ax0 = _mm_load1_pd(&A[row][inner][i][0]);
+						__m128d Ax1 = _mm_load1_pd(&A[row][inner][i][1]);
+						__m128d Ax2 = _mm_load1_pd(&A[row][inner][i][2]);
+						__m128d Ax3 = _mm_load1_pd(&A[row][inner][i][3]);
 
 						__m128d cResult1 = _mm_load_pd(&C[row][column][i][0]);
 						__m128d cResult2 = _mm_load_pd(&C[row][column][i][2]);
