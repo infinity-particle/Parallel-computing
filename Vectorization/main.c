@@ -59,25 +59,25 @@ unsigned long long vectorMultiplication(const matrix* matrixA,const matrix* matr
 					__m256d bRow3 = _mm256_load_pd(&matrixB->elements[inner][column][3][0]);
 
 
-					__m256d A00 = _mm256_load1_pd(&matrixA->elements[row][inner][0][0]);
-					__m256d A01 = _mm256_load1_pd(&matrixA->elements[row][inner][0][1]);
-					__m256d A02 = _mm256_load1_pd(&matrixA->elements[row][inner][0][2]);
-					__m256d A03 = _mm256_load1_pd(&matrixA->elements[row][inner][0][3]);
+					__m256d A00 = _mm256_broadcast_sd(&matrixA->elements[row][inner][0][0]);
+					__m256d A01 = _mm256_broadcast_sd(&matrixA->elements[row][inner][0][1]);
+					__m256d A02 = _mm256_broadcast_sd(&matrixA->elements[row][inner][0][2]);
+					__m256d A03 = _mm256_broadcast_sd(&matrixA->elements[row][inner][0][3]);
 
-					__m256d A10 = _mm256_load1_pd(&matrixA->elements[row][inner][1][0]);
-					__m256d A11 = _mm256_load1_pd(&matrixA->elements[row][inner][1][1]);
-					__m256d A12 = _mm256_load1_pd(&matrixA->elements[row][inner][1][2]);
-					__m256d A13 = _mm256_load1_pd(&matrixA->elements[row][inner][1][3]);
+					__m256d A10 = _mm256_broadcast_sd(&matrixA->elements[row][inner][1][0]);
+					__m256d A11 = _mm256_broadcast_sd(&matrixA->elements[row][inner][1][1]);
+					__m256d A12 = _mm256_broadcast_sd(&matrixA->elements[row][inner][1][2]);
+					__m256d A13 = _mm256_broadcast_sd(&matrixA->elements[row][inner][1][3]);
 
-					__m256d A20 = _mm256_load1_pd(&matrixA->elements[row][inner][2][0]);
-					__m256d A21 = _mm256_load1_pd(&matrixA->elements[row][inner][2][1]);
-					__m256d A22 = _mm256_load1_pd(&matrixA->elements[row][inner][2][2]);
-					__m256d A23 = _mm256_load1_pd(&matrixA->elements[row][inner][2][3]);
+					__m256d A20 = _mm256_broadcast_sd(&matrixA->elements[row][inner][2][0]);
+					__m256d A21 = _mm256_broadcast_sd(&matrixA->elements[row][inner][2][1]);
+					__m256d A22 = _mm256_broadcast_sd(&matrixA->elements[row][inner][2][2]);
+					__m256d A23 = _mm256_broadcast_sd(&matrixA->elements[row][inner][2][3]);
 
-					__m256d A30 = _mm256_load1_pd(&matrixA->elements[row][inner][3][0]);
-					__m256d A31 = _mm256_load1_pd(&matrixA->elements[row][inner][3][1]);
-					__m256d A32 = _mm256_load1_pd(&matrixA->elements[row][inner][3][2]);
-					__m256d A33 = _mm256_load1_pd(&matrixA->elements[row][inner][3][3]);
+					__m256d A30 = _mm256_broadcast_sd(&matrixA->elements[row][inner][3][0]);
+					__m256d A31 = _mm256_broadcast_sd(&matrixA->elements[row][inner][3][1]);
+					__m256d A32 = _mm256_broadcast_sd(&matrixA->elements[row][inner][3][2]);
+					__m256d A33 = _mm256_broadcast_sd(&matrixA->elements[row][inner][3][3]);
 
 					cRow0 = _mm256_add_pd(cRow0, _mm256_mul_pd(A00, bRow0));
 					cRow0 = _mm256_add_pd(cRow0, _mm256_mul_pd(A01, bRow1));
@@ -133,7 +133,7 @@ unsigned long long vectorMultiplication(const matrix* matrixA,const matrix* matr
 					__m128d A32 = _mm_load1_pd(&matrixA->elements[row][inner][3][2]);
 					__m128d A33 = _mm_load1_pd(&matrixA->elements[row][inner][3][3]);
 
-					
+
 
 
 					C00_01 = _mm_add_pd(C00_01, _mm_mul_pd(A00, B00_B01));
