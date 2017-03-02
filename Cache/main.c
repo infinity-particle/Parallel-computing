@@ -31,7 +31,7 @@ int main(){
 	for(int i = 0; i < N; i++){
 		for(int j = 0; j < BLOCK_SIZE/N; j++){
 			if(i * OFFSET == (N-1) * OFFSET){
-				if(j = BLOCK_SIZE/4 - 1){
+				if(j == BLOCK_SIZE/N - 1){
 					array[i * OFFSET + j] = 0;
 				}else{
 					array[i * OFFSET + j] = lastRow;
