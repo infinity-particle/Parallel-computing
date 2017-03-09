@@ -1,84 +1,94 @@
-#include <stdio.h>
 #include <stdlib.h>
+#include <malloc.h>
+#include <stdio.h>
 
-#define BLOCK_SIZE 65536
+#define ALIGMENT 64
+#define BLOCKSIZE 131072
 #define OFFSET 1048576
-#define N 4
-#define NUMBER_OF_ITERATIONS 15
+#define N 15
+#define ITERATIONS BLOCKSIZE / sizeof(int)
 
-unsigned long long rdtsc();
 
-int main(){
-
-	char* array; 
-	array = (char*)malloc(OFFSET * N * sizeof(char));
-
-	int index = 0 , count = 0, block = 0;
-	unsigned long long start,end;
-
-	if(array){
-		printf("Memory allocated\n");
-	}else{
-		printf("Can't allocate memory");
-		return 0;
-	}
-
-	char begin = 8;
-	char lastRow = 1;
-
-	printf("Block size: %ld, Offset: %ld, N: %ld\n", BLOCK_SIZE, OFFSET, N);
-
-	for(int i = 0; i < N; i++){
-		for(int j = 0; j < BLOCK_SIZE/N; j++){
-			if(i * OFFSET == (N-1) * OFFSET){
-				if(j == BLOCK_SIZE/N - 1){
-					array[i * OFFSET + j] = 0;
-				}else{
-					array[i * OFFSET + j] = lastRow;
-					lastRow++;
+void fillArray(int* array, int number_of_fragments, int fragment_size, int offset){
+	for (int i = 0; i < number_of_fragments; i++) {
+		for (int j = 0; j < fragment_size; j++) {
+			if (i < number_of_fragments - 1) {
+				array[i * offset + j] = offset * (i + 1) + j;
+			}
+			else {
+				if (j < fragment_size - 1) {
+					array[i * offset + j] = j + 1;
 				}
-			}else{
-				array[i * OFFSET + j] = begin;
-				begin++;
-			}
-		}
-	} 
-
-	for(int i = 0; i < N; i++){
-		for(int j = 0; j < BLOCK_SIZE/N; j++){
-			if(j == 0){
-				printf("Block %d starting address: %X\n", i, &array[i * OFFSET + j]);
+				else {
+					array[i * offset + j] = 0;
+				}
 			}
 		}
 	}
-
-	for(int i = 0; i < N; i++){
-		for(int j = 0; j < BLOCK_SIZE/N; j++){
-			printf("%d, ", array[i * OFFSET + j]);
-		}
-		printf("\t");
-	}
-
-	while(count < NUMBER_OF_ITERATIONS){
-		start = rdtsc();
-		do{
-			printf("Index: %d\n", index);
-			index = array[block * OFFSET + index];
-			block++;
-			if(block == N){
-				block = 0;
-			}
-		}while(index != 0);
-		end = rdtsc();
-		printf("Number of cycles: %lld\n", end - start);
-		count++;
-	}
-
-	return 0;
 }
 
 unsigned long long rdtsc(){
     unsigned int low,high;
     __asm__ __volatile__ ("rdtsc" : "=a" (low), "=d" (high));
     return ((unsigned long long)high << 32) | low;
+}
+
+
+
+unsigned long long* getResult(int array[], int offsetInBytes, int maxWayNumber, int blockSizeInBytes){
+	unsigned long long* results =(unsigned long long*)malloc(sizeof(unsigned long long) * N);
+
+	unsigned long long beginTime, endTime;
+
+	int offset = offsetInBytes / sizeof(int);
+
+	for (int i = 0; i < maxWayNumber; i++){
+		int fragmentSize = blockSizeInBytes / (sizeof(int) * (i+1));
+
+		fillArray(array, i+1, fragmentSize, offset);
+
+		int index;
+		index = 0;
+
+		beginTime = rdtsc();
+
+		for (int j = 0; j < ITERATIONS; j++){
+			index = array[index];
+		}
+
+		results[i] = rdtsc() - beginTime;
+	}
+
+	return results;
+}
+
+int main(){
+	system("clear");
+
+	int* array = (int*)aligned_alloc((size_t)ALIGMENT, (size_t)(OFFSET * N));
+	unsigned long long *results = (unsigned long long *)aligned_alloc((size_t)ALIGMENT, (size_t)(N * sizeof(unsigned long long)));
+
+	int retries = 5;
+
+	for (int j = 0; j < N; j++){
+		results[j] = 0;
+	}
+
+	for (int i = 0; i < retries; i++){
+		unsigned long long *result = getResult(array, OFFSET, N, BLOCKSIZE);
+
+		for (int j = 0; j < N; j++){
+			results[j] += result[j];
+		}
+	}
+
+	for (int j = 0; j < N; j++){
+		results[j] /= (retries);
+	}
+
+	for (int i = 0; i < N; i++){
+		printf("%d %llu\r\n", i, results[i]);
+	}
+
+	return 0;
 }
