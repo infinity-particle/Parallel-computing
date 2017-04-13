@@ -1,18 +1,20 @@
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-
+#include <iostream> 
+#include <cuda_runtime.h> 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <intrin.h>
 #include <ctime>
-
+ 
+#pragma comment(lib, "cudart") 
+ 
 using namespace std;
 
 #define MATRIX_SIZE 1024
 #define BlockSize 32
-
-void matrixMultiplicationWithCuda(int A[][MATRIX_SIZE],int B[][MATRIX_SIZE],int C[][MATRIX_SIZE]);
+ 
+// CUDA kernel: cubes each array value 
+void matrixMultiplicationWithCuda(int A[][MATRIX_SIZE],int B[][MATRIX_SIZE],int C[][MATRIX_SIZE], bool flagOptimozation);
 void matrixMultiplicationCPU(int A[][MATRIX_SIZE],int B[][MATRIX_SIZE],int C[][MATRIX_SIZE]);
 void checkCUDAStatus(cudaError_t cudaStatus);
 bool compareResults(int cudaMultiplicationResult[][MATRIX_SIZE],int cpuMultiplicationResult[][MATRIX_SIZE]);
@@ -23,7 +25,7 @@ __global__ void matrixMultiplicationKernel(int *A, int *B, int *C)
 	int column = blockIdx.x * blockDim.x + threadIdx.x;
 	int row = blockIdx.y * blockDim.y + threadIdx.y;
 
-
+	//__syncthreads();
 	if (row > MATRIX_SIZE || column > MATRIX_SIZE) return;
 
 	for (int i = 0; i < MATRIX_SIZE; i++){
@@ -32,12 +34,43 @@ __global__ void matrixMultiplicationKernel(int *A, int *B, int *C)
 	C[row*MATRIX_SIZE + column] = result;
 }
 
+__global__ void matrixMultiplicationWithOptimizationKernel(int *A, int *B, int *C)
+{
+	
+	__shared__ float ds_M[BlockSize][BlockSize];
+    __shared__ float ds_N[BlockSize][BlockSize];
+    int bx = blockIdx.x, by = blockIdx.y,
+       tx = threadIdx.x, ty = threadIdx.y,
+       Row = by * BlockSize + ty,
+       Col = bx * BlockSize + tx;
+    float Pvalue = 0;
+
+    for (int m = 0; m < (MATRIX_SIZE-1)/BlockSize+1; ++m) {
+       if (Row < MATRIX_SIZE && m*BlockSize+tx < MATRIX_SIZE)
+          ds_M[ty][tx] = A[Row*MATRIX_SIZE + m*BlockSize+tx];
+       else
+          ds_M[ty][tx] = 0;
+       if (Col < MATRIX_SIZE && m*BlockSize+ty < MATRIX_SIZE)
+          ds_N[ty][tx] = B[(m*BlockSize+ty)*MATRIX_SIZE+Col];
+       else
+          ds_N[ty][tx] = 0;
+
+       __syncthreads();
+       for (int k = 0; k < BlockSize; ++k)
+          Pvalue += ds_M[ty][k] * ds_N[k][tx];
+       __syncthreads();
+    }
+    if (Row < MATRIX_SIZE && Col < MATRIX_SIZE)
+       C[Row*MATRIX_SIZE+Col] = Pvalue;
+}
+		
 int main()
 {
     srand(time(0));
 	auto matrixA = new int[MATRIX_SIZE][MATRIX_SIZE];
 	auto matrixB = new int[MATRIX_SIZE][MATRIX_SIZE];
 	auto cudaMultiplicationResult = new int[MATRIX_SIZE][MATRIX_SIZE];
+	auto cudaWithOptimizationMultiplicationResult = new int[MATRIX_SIZE][MATRIX_SIZE];
 	auto cpuMultiplicationResult = new int[MATRIX_SIZE][MATRIX_SIZE];
 
 	for (int i = 0; i<MATRIX_SIZE; i++){
@@ -48,9 +81,10 @@ int main()
 		}
 	}
 	
-
-	matrixMultiplicationWithCuda(matrixA, matrixB, cudaMultiplicationResult);
+	matrixMultiplicationWithCuda(matrixA, matrixB, cudaMultiplicationResult, false);
+	matrixMultiplicationWithCuda(matrixA, matrixB, cudaWithOptimizationMultiplicationResult, true);
 	matrixMultiplicationCPU(matrixA, matrixB, cpuMultiplicationResult);
+	
 	if(compareResults(cudaMultiplicationResult, cpuMultiplicationResult)){
 		printf("Results are equals!\n");
 	}else{
@@ -63,7 +97,9 @@ int main()
 	delete[] cpuMultiplicationResult;
 }
 
-void matrixMultiplicationWithCuda(int A[][MATRIX_SIZE],int B[][MATRIX_SIZE],int C[][MATRIX_SIZE])
+
+
+void matrixMultiplicationWithCuda(int A[][MATRIX_SIZE],int B[][MATRIX_SIZE],int C[][MATRIX_SIZE], bool flagOptimization)
 {
     int *dev_a, *dev_b, *dev_c;
 	clock_t begin, end;
@@ -86,7 +122,10 @@ void matrixMultiplicationWithCuda(int A[][MATRIX_SIZE],int B[][MATRIX_SIZE],int 
 	dim3 dimGrid((MATRIX_SIZE + dimBlock.x - 1) / dimBlock.x, (MATRIX_SIZE + dimBlock.y - 1) / dimBlock.y);
 	
 	begin = clock();
-	matrixMultiplicationKernel <<< dimGrid, dimBlock >>>(dev_a, dev_b, dev_c);
+	if(flagOptimization)
+		matrixMultiplicationWithOptimizationKernel <<< dimGrid, dimBlock >>>(dev_a, dev_b, dev_c);
+	else
+		matrixMultiplicationKernel <<< dimGrid, dimBlock >>>(dev_a, dev_b, dev_c);
 	cudaDeviceSynchronize();
 	end = clock();
 
@@ -95,7 +134,11 @@ void matrixMultiplicationWithCuda(int A[][MATRIX_SIZE],int B[][MATRIX_SIZE],int 
 
 	cudaStatus = cudaMemcpy(C, dev_c, ((MATRIX_SIZE*MATRIX_SIZE))*sizeof(int), cudaMemcpyDeviceToHost);
 	checkCUDAStatus(cudaStatus);
-	printf("CUDA time: %lf seconds\n", (double)(end - begin)/CLOCKS_PER_SEC);
+
+	if(flagOptimization)
+		printf("CUDA time with optimization: %lf seconds\n", (double)(end - begin)/CLOCKS_PER_SEC);
+	else
+		printf("CUDA time: %lf seconds\n", (double)(end - begin)/CLOCKS_PER_SEC);	
 
 	cudaFree(dev_a);
 	cudaFree(dev_b);
