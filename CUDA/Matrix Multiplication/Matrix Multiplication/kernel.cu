@@ -97,21 +97,24 @@ int main()
 	delete[] cpuMultiplicationResult;
 }
 
-
-
 void matrixMultiplicationWithCuda(int A[][MATRIX_SIZE],int B[][MATRIX_SIZE],int C[][MATRIX_SIZE], bool flagOptimization)
 {
     int *dev_a, *dev_b, *dev_c;
 	clock_t begin, end;
 	cudaError_t cudaStatus;
+	cudaEvent_t start;
+	cudaEvent_t stop;
+
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+
 
 	cudaStatus = cudaMalloc((void**)&dev_a, ((MATRIX_SIZE)*(MATRIX_SIZE))*sizeof(int));
 	checkCUDAStatus(cudaStatus);
 	cudaStatus = cudaMalloc((void**)&dev_b, ((MATRIX_SIZE)*(MATRIX_SIZE))*sizeof(int));
 	checkCUDAStatus(cudaStatus);
 	cudaStatus = cudaMalloc((void**)&dev_c, ((MATRIX_SIZE)*(MATRIX_SIZE))*sizeof(int));
-
-
+	checkCUDAStatus(cudaStatus);
 
 	cudaStatus = cudaMemcpy(dev_a, A, ((MATRIX_SIZE*MATRIX_SIZE))*sizeof(int), cudaMemcpyHostToDevice);
 	checkCUDAStatus(cudaStatus);
@@ -121,13 +124,13 @@ void matrixMultiplicationWithCuda(int A[][MATRIX_SIZE],int B[][MATRIX_SIZE],int 
 	dim3 dimBlock(BlockSize, BlockSize);
 	dim3 dimGrid((MATRIX_SIZE + dimBlock.x - 1) / dimBlock.x, (MATRIX_SIZE + dimBlock.y - 1) / dimBlock.y);
 	
-	begin = clock();
+	cudaEventRecord(start);
 	if(flagOptimization)
 		matrixMultiplicationWithOptimizationKernel <<< dimGrid, dimBlock >>>(dev_a, dev_b, dev_c);
 	else
 		matrixMultiplicationKernel <<< dimGrid, dimBlock >>>(dev_a, dev_b, dev_c);
-	cudaDeviceSynchronize();
-	end = clock();
+	cudaEventRecord(stop);
+	cudaEventSynchronize(stop);
 
 	cudaStatus = cudaGetLastError();
 	checkCUDAStatus(cudaStatus);
@@ -135,10 +138,13 @@ void matrixMultiplicationWithCuda(int A[][MATRIX_SIZE],int B[][MATRIX_SIZE],int 
 	cudaStatus = cudaMemcpy(C, dev_c, ((MATRIX_SIZE*MATRIX_SIZE))*sizeof(int), cudaMemcpyDeviceToHost);
 	checkCUDAStatus(cudaStatus);
 
+	float time;
+	cudaEventElapsedTime(&time, start, stop);
+
 	if(flagOptimization)
-		printf("CUDA time with optimization: %lf seconds\n", (double)(end - begin)/CLOCKS_PER_SEC);
+		printf("CUDA time with optimization: %f seconds\n", time / 1000);
 	else
-		printf("CUDA time: %lf seconds\n", (double)(end - begin)/CLOCKS_PER_SEC);	
+		printf("CUDA time: %f seconds\n", time / 1000);	
 
 	cudaFree(dev_a);
 	cudaFree(dev_b);
